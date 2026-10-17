@@ -107,6 +107,37 @@ dl.stats dt{color:var(--muted)} dl.stats dd{margin:0;font-weight:800;text-align:
 .rank-row .rk{font:800 26px var(--f-display);text-align:center}
 .rank-row dl{display:grid;grid-template-columns:auto auto;gap:0 10px;margin:0;font-size:13px}
 .rank-row dt{color:var(--muted)}.rank-row dd{margin:0;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+/* màn hình ngang trên điện thoại */
+#rotate{position:fixed;inset:0;z-index:100;background:var(--night);color:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+#rotate b{font:800 26px/1.15 var(--f-display);color:var(--sun);text-wrap:balance}
+#rotate span{font-size:14px;color:var(--soft);max-width:32ch;line-height:1.5}
+.rot-phone{width:64px;height:110px;border:5px solid var(--sun);border-radius:14px;position:relative;animation:rot 2.4s ease-in-out infinite}
+.rot-phone::after{content:"";position:absolute;left:50%;bottom:6px;width:16px;height:4px;margin-left:-8px;border-radius:2px;background:var(--sun)}
+@keyframes rot{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@media (max-height:520px){
+ .hud{gap:5px;top:calc(env(safe-area-inset-top,0px) + 6px);max-width:56%}
+ .chip{padding:1px 7px;border-radius:8px;min-width:0}.chip span{font-size:8px}.chip b{font-size:12px}
+ .tools{top:calc(env(safe-area-inset-top,0px) + 6px);gap:4px;max-width:42%}
+ .tools button{font-size:11px;padding:.3em .5em;border-radius:8px;box-shadow:0 2px 0 var(--ink)}
+ #hint{display:none!important}
+ #prompt{font-size:12px;padding:5px 10px;bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+ #held{font-size:11px;padding:5px 9px;max-width:40%}
+ #chatLog{top:calc(env(safe-area-inset-top,0px) + 54px);width:min(260px,40vw)}#chatLog div{font-size:11px;padding:3px 8px}
+ #hVisit{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 44px);font-size:12px}
+ #joy{width:112px;height:112px;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px)}
+ #joyKnob{width:48px;height:48px;margin:-24px 0 0 -24px}
+ .tbtns{right:max(14px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 12px);gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:210px}
+ .tbtns button{width:48px;height:48px;font-size:18px}.tbtns #tE{width:66px;height:66px;font-size:24px}
+ body:has(#touch:not([hidden])) #held{bottom:calc(env(safe-area-inset-bottom,0px) + 134px);left:max(14px,env(safe-area-inset-left,0px))}
+ body:has(#touch:not([hidden])) #prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 12px);max-width:40vw}
+ .ov{padding:8px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px))}
+ .card{padding:12px;gap:8px}.card h2{font-size:21px}
+ .reveal{--cw:84px;gap:8px}
+ .cash3 b{font-size:22px}.cash3 .need b{font-size:32px}.left{font-size:18px}#chgScr{font-size:30px}.screen{font-size:24px;padding:4px 10px}
+ .bill{padding:.45em 0}.pad button{font-size:16px;padding:.3em 0}
+ .float{font-size:24px}
+ #chatBar{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px}
+}
 /* tiền thối */
 .cash3{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
 .cash3 div{border:3px solid var(--ink);border-radius:12px;padding:8px 12px;background:#fff;display:flex;flex-direction:column}
@@ -153,9 +184,74 @@ body:has(#touch:not([hidden])) #held{bottom:calc(env(safe-area-inset-bottom,0px)
 body:has(#touch:not([hidden])) #prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 180px)}
 @media(max-width:700px){#hint{display:none}.hud{max-width:100%}.tools{top:calc(env(safe-area-inset-top,0px) + 74px);left:max(12px,env(safe-area-inset-left,0px));right:auto;justify-content:flex-start;max-width:none}}
 @media(prefers-reduced-motion:reduce){.holo,.burst,.float,.vnd-title{animation:none}.flip-in{transition:none}}
+/* điện thoại */
+#rotate{position:fixed;inset:0;z-index:100;background:var(--night);color:var(--paper);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+#rotate b{font:800 26px/1.2 var(--f-display);color:var(--sun)}
+#rotate p{margin:0;max-width:30ch;color:var(--soft);line-height:1.5}
+.rot-phone{width:70px;height:120px;border:5px solid var(--sun);border-radius:14px;animation:rot 2.2s ease-in-out infinite}
+@keyframes rot{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#stage{position:fixed;inset:0;overflow:hidden}
+body.rot #stage{inset:auto;top:0;left:0;width:var(--sh);height:var(--sw);transform-origin:top left;transform:translateX(var(--sw)) rotate(90deg)}
+body.rot .hud{gap:4px;top:calc(env(safe-area-inset-top,0px) + 6px);max-width:55%}
+body.rot .chip{padding:1px 7px;border-radius:8px;min-width:0}
+body.rot .chip span{font-size:8px}
+body.rot .chip b{font-size:12px}
+body.rot .tools{top:calc(env(safe-area-inset-top,0px) + 6px);left:auto;right:max(8px,env(safe-area-inset-right,0px));bottom:auto;max-width:42%;gap:4px}
+body.rot .tools button{font-size:11px;padding:.3em .55em;border-radius:8px;box-shadow:0 2px 0 var(--ink)}
+body.rot #hint{display:none!important}
+body.rot #prompt{font-size:12px;padding:5px 10px;bottom:calc(env(safe-area-inset-bottom,0px) + 112px)!important;max-width:52%}
+body.rot #held{font-size:11px;padding:5px 8px;max-width:40%;left:auto;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 100px)!important}
+body.rot #held kbd{display:none}
+body.rot #joy{width:104px;height:104px;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px)}
+body.rot #joyKnob{width:44px;height:44px;margin:-22px 0 0 -22px}
+body.rot .tbtns{gap:6px;flex-wrap:nowrap;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:max(12px,env(safe-area-inset-right,0px))}
+body.rot .tbtns button{width:46px;height:46px;font-size:17px}
+body.rot .tbtns button small{font-size:8px}
+body.rot .tbtns #tE{width:64px;height:64px;font-size:22px}
+body.rot #chatLog{top:calc(env(safe-area-inset-top,0px) + 46px);width:min(260px,40%)}
+body.rot #chatLog div{font-size:11px;padding:3px 8px}
+body.rot #chatBar{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 8px)}
+body.rot #hVisit{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);font-size:11px}
+body.rot .toast{top:calc(env(safe-area-inset-top,0px) + 44px);font-size:12px;padding:6px 12px}
+body.rot .ov{padding:8px max(8px,env(safe-area-inset-right,0px)) 8px max(8px,env(safe-area-inset-left,0px))}
+body.rot .card{padding:12px;gap:8px}
+body.rot .card h2{font-size:20px}
+body.rot .reveal{--cw:84px}
+body.rot .cash3 b{font-size:20px}
+body.rot .cash3 .need b{font-size:30px}
+body.rot .screen,body.rot #chgScr{font-size:26px}
+body.rot .left{font-size:17px}
+body.rot .bill{padding:.45em 0}
+body.rot .logo b{font-size:30px}
+
+@media (max-height:520px) and (orientation:landscape){
+ .hud{gap:4px;top:calc(env(safe-area-inset-top,0px) + 6px);max-width:55vw}
+ .chip{padding:1px 7px;border-radius:8px;min-width:0}.chip span{font-size:8px}.chip b{font-size:12px}
+ .tools{top:calc(env(safe-area-inset-top,0px) + 6px);left:auto;right:max(8px,env(safe-area-inset-right,0px));bottom:auto;max-width:42vw;gap:4px}
+ .tools button{font-size:11px;padding:.3em .55em;border-radius:8px;box-shadow:0 2px 0 var(--ink)}
+ #hint{display:none!important}
+ #prompt{font-size:12px;padding:5px 10px;bottom:calc(env(safe-area-inset-bottom,0px) + 112px)!important;max-width:52vw}
+ #held{font-size:11px;padding:5px 8px;max-width:40vw;left:auto;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 100px)!important}
+ #held kbd{display:none}
+ #joy{width:104px;height:104px;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 14px)}
+ #joyKnob{width:44px;height:44px;margin:-22px 0 0 -22px}
+ .tbtns{gap:6px;flex-wrap:nowrap;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);right:max(12px,env(safe-area-inset-right,0px))}
+ .tbtns button{width:46px;height:46px;font-size:17px}.tbtns button small{font-size:8px}
+ .tbtns #tE{width:64px;height:64px;font-size:22px}
+ #chatLog{top:calc(env(safe-area-inset-top,0px) + 46px);width:min(260px,40vw)}#chatLog div{font-size:11px;padding:3px 8px}
+ #chatBar{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 8px)}
+ #hVisit{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);font-size:11px}
+ .toast{top:calc(env(safe-area-inset-top,0px) + 44px);font-size:12px;padding:6px 12px}
+ .ov{padding:8px max(8px,env(safe-area-inset-right,0px)) 8px max(8px,env(safe-area-inset-left,0px))}
+ .card{padding:12px;gap:8px}.card h2{font-size:20px}
+ .reveal{--cw:84px}
+ .cash3 b{font-size:20px}.cash3 .need b{font-size:30px}.screen,#chgScr{font-size:26px}.left{font-size:17px}.bill{padding:.45em 0}
+ .logo b{font-size:30px}
+}
 </style>
 
 <div id="view"></div>
+<div id="rotate" hidden><div class="rot-phone"></div><b>Xoay ngang điện thoại để chơi</b><p>Game được thiết kế cho màn hình ngang. Nếu xoay mà màn hình không đổi, hãy tắt khóa xoay trong Trung tâm điều khiển.</p></div>
 <div id="cross" hidden></div>
 <div class="hud" id="hud" hidden>
   <div class="chip money"><span>Tiền</span><b id="hMoney">0k</b></div>
@@ -172,6 +268,7 @@ body:has(#touch:not([hidden])) #prompt{bottom:calc(env(safe-area-inset-bottom,0p
   <button id="bView">Góc nhìn (V)</button>
   <button id="bBag">Túi đồ (B)</button>
   <button id="bSound">Âm thanh: bật</button>
+  <button id="bFull" hidden>Toàn màn hình</button>
   <button id="bExit">Lưu &amp; thoát</button>
 </div>
 <div id="prompt" hidden></div>
@@ -179,6 +276,7 @@ body:has(#touch:not([hidden])) #prompt{bottom:calc(env(safe-area-inset-bottom,0p
 <div id="hint" hidden><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> đi · <kbd>Shift</kbd> chạy · rê chuột để nhìn<br><kbd>E</kbd>/click: dùng, cầm, xếp (giữ để xếp liên tục)<br><kbd>G</kbd>/chuột phải: lấy thêm · <kbd>Q</kbd> đặt/cất · <kbd>F</kbd> bóc<br><kbd>M</kbd> dời kệ · <kbd>R</kbd> xoay · <kbd>V</kbd> góc nhìn · <kbd>O</kbd> mở cửa</div>
 <div id="toast" class="toast" hidden></div>
 <div id="hVisit" hidden></div>
+<div id="rotate" hidden><div class="rot-phone"></div><b>Xoay ngang điện thoại để chơi</b><span>Game được thiết kế cho màn hình ngang. Nếu xoay rồi mà không đổi, hãy tắt khóa xoay màn hình trong Trung tâm điều khiển.</span></div>
 <div id="chatLog" hidden></div>
 <div id="chatBar" hidden><div class="row"><input id="chatIn" maxlength="120" placeholder="Nhắn cả phòng… (Enter để gửi)" autocomplete="off"><button class="primary" id="chatSend">Gửi</button><button id="chatClose">Đóng</button></div>
 <div class="row says"><button data-say="Chào cả nhà!">Chào cả nhà!</button><button data-say="Ghé tiệm tui chơi nha">Ghé tiệm tui nha</button><button data-say="Vừa trúng thẻ hiếm!">Trúng thẻ hiếm!</button><button data-say="Haha">Haha</button><button data-say="Đợi tui xíu">Đợi tui xíu</button></div></div>
@@ -863,7 +961,7 @@ function update(dt){
 // ================= điều khiển
 const keys={};let actPlace=false,holdAct=false,holdT=0,mouse=new THREE.Vector2(),ray=new THREE.Raycaster(),target=null,regFlash=0;let held=null;
 const cv=renderer.domElement;
-function overlayOpen(){return !$('#ov').hidden||!$('#title').hidden}
+function overlayOpen(){return !$('#ov').hidden||!$('#title').hidden||!$('#rotate').hidden}
 document.addEventListener('keydown',e=>{
  if(e.target.tagName==='INPUT')return;
  if(overlayOpen()){if(e.code==='Escape'&&!$('#ov').hidden&&ovClosable)closeOv();if(R&&R.pay&&!$('#ov').hidden)payKey(e);return}
@@ -893,19 +991,21 @@ window.addEventListener('mousemove',e=>{mIn=true;mPos.x=e.clientX;mPos.y=e.clien
  const mx=e.movementX||0,my=e.movementY||0;if(Math.abs(mx)>200||Math.abs(my)>200)return;
  player.yaw-=mx*.0035;player.pitch=clamp(player.pitch-my*.0035,-1.2,1.2)});
 cv.addEventListener('contextmenu',e=>e.preventDefault());
-function setMouse(e){const b=cv.getBoundingClientRect();mouse.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1)}
+let ROT=false;
+function setMouse(e){const b=cv.getBoundingClientRect();if(ROT){mouse.set((e.clientY-b.top)/b.height*2-1,-((b.right-e.clientX)/b.width)*2+1)}else mouse.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1)}
+const gd=(sx,sy)=>ROT?[sy,-sx]:[sx,sy];
 function toggleView(){mode=mode==='fp'?'tv':'fp';$('#cross').hidden=mode!=='fp';toast(mode==='fp'?'Góc nhìn thứ nhất':'Góc nhìn từ trên: click vào đồ vật gần nhân vật để tương tác');attachHeld()}
 
 // cảm ứng
 const joy={on:false,x:0,y:0,id:null,cx:0,cy:0};const isTouch=('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches;let lookT=null;
 if(isTouch){
  const jb=$('#joy'),kn=$('#joyKnob');
- function moveJoy(t){let dx=t.clientX-joy.cx,dy=t.clientY-joy.cy;const m=50,d=Math.hypot(dx,dy);if(d>m){dx=dx/d*m;dy=dy/d*m}joy.x=dx/m;joy.y=dy/m;kn.style.transform=`translate(${dx}px,${dy}px)`}
+ function moveJoy(t){let [dx,dy]=gd(t.clientX-joy.cx,t.clientY-joy.cy);const m=50,d=Math.hypot(dx,dy);if(d>m){dx=dx/d*m;dy=dy/d*m}joy.x=dx/m;joy.y=dy/m;kn.style.transform=`translate(${dx}px,${dy}px)`}
  jb.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0],r=jb.getBoundingClientRect();joy.on=true;joy.id=t.identifier;joy.cx=r.left+r.width/2;joy.cy=r.top+r.height/2;moveJoy(t)},{passive:false});
  jb.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches)if(t.identifier===joy.id)moveJoy(t)},{passive:false});
  const endJ=e=>{for(const t of e.changedTouches)if(t.identifier===joy.id){joy.on=false;joy.x=joy.y=0;kn.style.transform=''}};jb.addEventListener('touchend',endJ);jb.addEventListener('touchcancel',endJ);
  cv.addEventListener('touchstart',e=>{e.preventDefault();if(overlayOpen())return;const t=e.changedTouches[0];lookT={id:t.identifier,x:t.clientX,y:t.clientY,moved:0}},{passive:false});
- cv.addEventListener('touchmove',e=>{e.preventDefault();if(!lookT)return;for(const t of e.changedTouches)if(t.identifier===lookT.id){const dx=t.clientX-lookT.x,dy=t.clientY-lookT.y;lookT.moved+=Math.abs(dx)+Math.abs(dy);lookT.x=t.clientX;lookT.y=t.clientY;if(mode==='fp'){player.yaw-=dx*.006;player.pitch=clamp(player.pitch-dy*.006,-1.3,1.3)}}},{passive:false});
+ cv.addEventListener('touchmove',e=>{e.preventDefault();if(!lookT)return;for(const t of e.changedTouches)if(t.identifier===lookT.id){const [dx,dy]=gd(t.clientX-lookT.x,t.clientY-lookT.y);lookT.moved+=Math.abs(dx)+Math.abs(dy);lookT.x=t.clientX;lookT.y=t.clientY;if(mode==='fp'){player.yaw-=dx*.006;player.pitch=clamp(player.pitch-dy*.006,-1.3,1.3)}}},{passive:false});
  cv.addEventListener('touchend',e=>{e.preventDefault();if(!lookT)return;for(const t of e.changedTouches)if(t.identifier===lookT.id){if(lookT.moved<12){if(mode==='tv')setMouse(t);act()}lookT=null}},{passive:false});
  const btn=(id,down,up)=>{const b=$(id);b.addEventListener('touchstart',e=>{e.preventDefault();down()},{passive:false});b.addEventListener('touchend',e=>{e.preventDefault();up&&up()},{passive:false})};
  btn('#tE',()=>{act();holdAct=true;holdT=.35},()=>{holdAct=false});btn('#tG',()=>takeMore());btn('#tQ',()=>dropHeld());btn('#tF',()=>doOpen());btn('#tM',()=>held&&held.kind==='furn'?rotateHeld(1):startMove());
@@ -1175,8 +1275,10 @@ function frame(){
  lightT-=dt;if(lightT<=0){lightT=.5;lighting()}
  renderer.render(scene,camera);requestAnimationFrame(frame);
 }
-function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
-window.addEventListener('resize',resize);resize();
+function updateRot(){ROT=isTouch&&innerHeight>innerWidth;document.body.classList.toggle('rot',ROT);const st=document.documentElement.style;st.setProperty('--sw',innerWidth+'px');st.setProperty('--sh',innerHeight+'px')}
+function resize(){updateRot();const w=ROT?innerHeight:innerWidth,h=ROT?innerWidth:innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+{const stage=document.createElement('div');stage.id='stage';[...document.body.children].filter(n=>n.tagName!=='SCRIPT').forEach(n=>stage.appendChild(n));document.body.prepend(stage)}
+window.addEventListener('resize',resize);window.addEventListener('orientationchange',()=>setTimeout(resize,250));resize();
 
 // ================= ô lưu
 function renderSlots(){
@@ -1186,7 +1288,10 @@ $('#slots').addEventListener('click',e=>{const b=e.target.closest('button');if(!
  if(b.dataset.del){if(b.dataset.confirm){try{localStorage.removeItem(SLOT_KEY(+b.dataset.del))}catch(err){}renderSlots()}else{b.dataset.confirm='1';b.textContent='Chắc chắn xóa?';b.classList.add('danger')}return}
  if(b.dataset.slot)startSlot(+b.dataset.slot)});
 function startSlot(i){startGame(readSlot(i)||newSave(),i)}
-function startGame(s,i){
+function wantLandscape(){if(!isTouch)return;try{const el=document.documentElement;const go=()=>{try{const p=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');p&&p.catch&&p.catch(()=>{})}catch(e){}};if(el.requestFullscreen&&!document.fullscreenElement){const p=el.requestFullscreen({navigationUI:'hide'});p&&p.then?p.then(go).catch(()=>{}):go()}else go()}catch(e){}}
+function checkRotate(){const show=isTouch&&!!S&&innerHeight>innerWidth;const r=$('#rotate');if(r.hidden===show)r.hidden=!show}
+window.addEventListener('resize',checkRotate);window.addEventListener('orientationchange',()=>setTimeout(checkRotate,200));
+function startGame(s,i){wantLandscape();
  slot=i;S=s;S.prices=Object.assign(newSave().prices,S.prices);S.stats=Object.assign(newSave().stats,S.stats);S.cards=S.cards||{};S.boxes=arr(S.boxes);S.furn=arr(S.furn);S.bag=Object.assign({pack:0,elite:0,sleeve:0},S.bag);
  boxes.slice().forEach(removeBox);furns.slice().forEach(removeFurn);held=null;clearHeldMesh();
  S.furn.forEach(d=>{if(!d||!FURN[d.type])return;const f={type:d.type,x:d.x,z:d.z,rot:d.rot||0,tiers:d.tiers?arr(d.tiers).map(t=>({p:t&&t.p||null,q:t&&t.q||0})):undefined};buildFurn(f);furns.push(f)});
@@ -1194,12 +1299,14 @@ function startGame(s,i){
  newRun();drawSign();drawName();player.x=3;player.z=3.2;player.yaw=.55;player.pitch=-.12;
  $('#title').hidden=true;['hud','tools'].forEach(id=>$('#'+id).hidden=false);$('#hint').hidden=isTouch;$('#touch').hidden=!isTouch;$('#cross').hidden=mode!=='fp';
  $('#bSound').textContent='Âm thanh: '+(S.sound?'bật':'tắt');save();
- toast(S.day===1&&!S.stats.served?'Chào chủ tiệm! Ra ngoài cửa nhìn bảng hiệu để đặt tên tiệm, xếp hàng lên kệ rồi bấm Mở cửa tiệm.':`Chào mừng quay lại ${S.name}, ngày ${S.day}!`)}
+ checkRotate();toast(S.day===1&&!S.stats.served?'Chào chủ tiệm! Ra ngoài cửa nhìn bảng hiệu để đặt tên tiệm, xếp hàng lên kệ rồi bấm Mở cửa tiệm.':`Chào mừng quay lại ${S.name}, ngày ${S.day}!`)}
 function exitToTitle(){if(R&&R.pay)return toast('Thanh toán xong cho khách đã nhé.');if(held&&held.kind==='furn')cancelMove();
  R&&R.custs.forEach(c=>{returnItems(c);scene.remove(c.g)});save();if(ONLINE){if(ONLINE.savePending||true){ONLINE.saveT=0;onlineSave()}pushShop(true);leaveOnline()}
  if(held&&held.kind==='hand'){clearHeldMesh()}S=null;R=null;held=null;
  boxes.slice().forEach(removeBox);furns.slice().forEach(removeFurn);cv.style.cursor='default';
- ['hud','tools','hint','prompt','held','cross','touch'].forEach(id=>$('#'+id).hidden=true);$('#ov').hidden=true;renderSlots();$('#title').hidden=false}
+ ['hud','tools','hint','prompt','held','cross','touch','rotate'].forEach(id=>$('#'+id).hidden=true);$('#ov').hidden=true;renderSlots();$('#title').hidden=false}
+if(isTouch){const bf=$('#bFull');const canFS=document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen;bf.hidden=!canFS;
+ bf.onclick=async()=>{try{const el=document.documentElement;if(!document.fullscreenElement&&!document.webkitFullscreenElement){await (el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen());try{await screen.orientation.lock('landscape')}catch(e){}}else{document.exitFullscreen?document.exitFullscreen():document.webkitExitFullscreen()}}catch(e){toast('Trình duyệt này không hỗ trợ toàn màn hình. Hãy thêm game vào Màn hình chính.')}}}
 $('#bView').onclick=()=>toggleView();$('#bOpen').onclick=()=>toggleOpen();$('#bBag').onclick=()=>openBag();$('#bExit').onclick=()=>exitToTitle();
 $('#bSound').onclick=()=>{S.sound=!S.sound;$('#bSound').textContent='Âm thanh: '+(S.sound?'bật':'tắt');save()};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
