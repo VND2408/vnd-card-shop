@@ -418,6 +418,9 @@ body.rot .chip.goal{display:none}
 body.rot #held{top:calc(env(safe-area-inset-top,0px) + 96px)!important;bottom:auto!important;left:max(10px,env(safe-area-inset-left,0px))!important;right:auto!important;max-width:36%!important;font-size:11px!important;padding:4px 8px!important;opacity:.92}
 body.rot #prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;max-width:42%!important;font-size:12.5px!important;padding:4px 10px!important;line-height:1.3}
 @media (max-height:520px) and (max-width:760px){#held{top:calc(env(safe-area-inset-top,0px) + 96px)!important}}
+@media (max-height:520px){.slot8.empty{min-height:64px;cursor:pointer}}
+body.rot .slot8.empty{min-height:64px}
+.slot8.empty{cursor:pointer}
 
 </style>
 </head>
@@ -3340,6 +3343,25 @@ makePlush=function(c){const g=_mp5(c);if(c.rar!=='VND')return g;
  const H=g.children.find(o=>o.isGroup&&Math.abs(o.position.y-.29)<.01);
  if(H){for(const s of[-1,1])heart(s*.09,-.035,.112,.55,H);const st=new THREE.MeshBasicMaterial({color:0xffffff});for(const s of[-1,1]){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.007),st);m.position.set(s*.056-.012,.032,.135);H.add(m)}}
  return g};
+
+// ---------- tủ thẻ: bày tự động, chạm ô trống để chọn thẻ, gọn trên điện thoại
+const caseOK=(T,c)=>!T.rare||['SR','UR','VND','SEC'].includes(c.rar);
+const _rc5=renderCase;
+renderCase=function(){_rc5();const f=CASEF;if(!f)return;const T=FURN[f.type],n=f.slots.filter(Boolean).length,have=CARDS.some(c=>S.cards[c.id]>0&&caseOK(T,c));
+ const row=document.createElement('div');row.className='row';row.innerHTML=`<button class="primary" data-act="caseAuto" ${n>=T.slots||!have?'disabled':''}>Bày tự động</button><button data-act="caseClear" ${!n?'disabled':''}>Cất hết</button><span class="meta">${have?'Ưu tiên thẻ trùng, lá đắt trước. Hoặc chạm vào Ô trống để tự chọn từng lá.':T.rare?'Chưa có thẻ Siêu hiếm trở lên để bày.':'Chưa có thẻ nào, bóc gói thẻ trước nhé.'}</span>`;
+ const h=[...document.querySelectorAll('#ovc h3')][0];if(h)h.before(row);
+ document.querySelectorAll('#ovc .slot8.empty').forEach(el=>{el.dataset.act='caseJump';el.setAttribute('role','button');el.innerHTML='<b style="font-size:20px">+</b>Chạm để chọn thẻ'})};
+EXT.caseJump=()=>{const l=$('#ovc .clist')||[...document.querySelectorAll('#ovc h3')].pop();if(l)l.scrollIntoView({block:'start',behavior:'smooth'})};
+EXT.caseAuto=()=>{const f=CASEF,T=FURN[f.type];const by=(a,b)=>cardPrice(b)-cardPrice(a);let put=0;
+ const next=()=>{let L=CARDS.filter(c=>S.cards[c.id]>1&&caseOK(T,c)).sort(by);if(!L.length)L=CARDS.filter(c=>S.cards[c.id]>0&&caseOK(T,c)).sort(by);return L[0]};
+ for(let i=0;i<f.slots.length;i++){if(f.slots[i])continue;const c=next();if(!c)break;S.cards[c.id]--;f.slots[i]={id:c.id};put++}
+ drawCase(f);SFX.place();save();renderCase();toast(put?`Đã bày ${put} lá.`:'Hết thẻ để bày rồi.')};
+EXT.caseClear=()=>{const f=CASEF;let n=0;f.slots.forEach((s,i)=>{if(s){S.cards[s.id]=(S.cards[s.id]||0)+1;f.slots[i]=null;n++}});drawCase(f);SFX.place();save();renderCase();toast(`Đã cất ${n} lá về túi.`)};
+// màn hình xoay (điện thoại dọc chơi ngang): tự cuộn bảng theo hướng ngón tay
+{let sc=null,lx=0,ly=0;const findSc=el=>{while(el&&el!==document.body){const cs=getComputedStyle(el);if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+2)return el;el=el.parentElement}return null};
+ const ovEl=$('#ov');
+ ovEl.addEventListener('touchstart',e=>{if(!document.body.classList.contains('rot')){sc=null;return}const t=e.touches[0];sc=findSc(e.target);lx=t.clientX;ly=t.clientY},{passive:true});
+ ovEl.addEventListener('touchmove',e=>{if(!sc||!document.body.classList.contains('rot'))return;const t=e.touches[0],dx=t.clientX-lx;lx=t.clientX;ly=t.clientY;sc.scrollTop+=dx;e.preventDefault()},{passive:false})}
 
 function migrateOld(){if(!S.crew){S.crew=[];const old=S.staff||{};if(old.cashier)S.crew.push({id:hash('oldc'),name:'Chị Lan',role:'cashier',star:2,shirt:0xff7aa8,hair:0x2b1d14,skin:SKINS[0]});if(old.stocker)S.crew.push({id:hash('olds'),name:'Anh Tùng',role:'stocker',star:2,shirt:0x4cc36b,hair:0x1b1f33,skin:SKINS[2]})}
  if(S.figs&&!S.plushMig){S.plushMig=true;for(const k in S.figs){const n=S.figs[k]|0;for(let i=0;i<n;i++){if(k==='vnd')addPlush(VND);else{const t=k.replace('*',''),L=byRar('SR').filter(c=>c.type===t);if(L.length)addPlush(pick(L))}}}}}
