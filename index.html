@@ -432,6 +432,20 @@ body.rot .slot8.empty{min-height:64px}
 .pedin.sm{padding:2px 8px;border-width:2px;border-radius:9px}.pedin.sm input{width:64px;font-size:17px}.pedin.sm span{font-size:13px}
 body.touch .prange{display:none}
 body.touch .card{padding-right:62px}
+html,body{overscroll-behavior:none;position:fixed;inset:0;width:100%;height:100%}
+body.rot .ov,body.rot .ov *{touch-action:none}
+body.rot .ov input,body.rot .ov textarea{touch-action:manipulation}
+.ov .card{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#furnBar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);z-index:7;display:flex;gap:6px;align-items:center;background:rgba(19,36,94,.92);border:2px solid var(--sun);border-radius:14px;padding:6px 8px;max-width:calc(100% - 20px);flex-wrap:wrap;justify-content:center}
+#furnBar[hidden]{display:none}
+#furnBar b{color:var(--sun);font:800 14px var(--f-display);padding:0 6px}
+#furnBar button{font-size:13px;padding:.45em .8em}
+.cpk{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.cpkc{display:flex;flex-direction:column;gap:3px;align-items:stretch;text-align:center;padding:6px;border-radius:10px;font-size:12px;background:#fff}
+.cpkc b{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cpkc span{font-size:11px;color:var(--muted)}
+.cpkc .cimg{max-width:84px}
+@media (max-height:520px){.cpk{grid-template-columns:repeat(6,minmax(0,1fr))}.cpkc .cimg{max-width:64px}#furnBar{top:calc(env(safe-area-inset-top,0px) + 46px)}}
+body.rot .cpk{grid-template-columns:repeat(6,minmax(0,1fr))}body.rot .cpkc .cimg{max-width:64px}body.rot #furnBar{top:calc(env(safe-area-inset-top,0px) + 92px)}
 
 </style>
 </head>
@@ -942,7 +956,7 @@ const SFX={beep:()=>tone([1760],.06,'square',.03),cash:()=>tone([880,1320,1760],
 
 // ================= renderer & cảnh
 const view=$('#view');
-const renderer=new THREE.WebGLRenderer({antialias:true});
+const renderer=new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});
 renderer.setPixelRatio(Math.min(1.5,window.devicePixelRatio||1));renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.82;
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -1055,7 +1069,7 @@ let BACKZ=-6;const BACKW=[];
 
 // tường trước: cửa x -6..-4.2, cửa kính lớn x -3.4..7.2
 const FRONT=[];
-function fw(w,h,x,y){const a=box(w,h,.3,LDS.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1);FRONT.push(a);const b=plane(w,h,MAT.brick,x,y,6.26);b.material=MAT.brick;FRONT.push(b);return a}
+function fw(w,h,x,y){const a=box(w,h,.3,LDS.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1);FRONT.push(a);const b=plane(w,h,MAT.brick,x,y,6.285);b.material=MAT.brick;FRONT.push(b);return a}
 fw(2,3.4,-7,1.7);fw(1.8,1.0,-5.1,2.9);fw(1.0,3.4,-3.7,1.7);fw(10.6,.7,1.9,.35);fw(10.6,.7,1.9,3.05);fw(.8,3.4,7.6,1.7);
 const winGlass=plane(10.6,2,MAT.glass,1.9,1.7,6.12);FRONT.push(winGlass);winGlass.castShadow=false;
 for(const x of [-3.2,.3,3.8,7.1])FRONT.push(box(.08,2,.12,MAT.metalDark,x,1.7,6.15));
@@ -1718,7 +1732,7 @@ function frame(){
   cv.style.cursor=mode==='fp'&&!isTouch&&!paused?'none':'default';hud();
  }else{camera.position.set(-2+Math.sin(t*.1)*10,6,22+Math.cos(t*.1)*4);camera.lookAt(0,2,4);camera.fov=55;camera.updateProjectionMatrix();HIDE_TV.forEach(m=>m.visible=true);FRONT.forEach(m=>m.visible=true)}
  lightT-=dt;if(lightT<=0){lightT=.5;lighting()}
- renderer.render(scene,camera);requestAnimationFrame(frame);
+ if(!ovSkipRender())renderer.render(scene,camera);requestAnimationFrame(frame);
 }
 function updateRot(){ROT=isTouch&&innerHeight>innerWidth;document.body.classList.toggle('rot',ROT);const st=document.documentElement.style;st.setProperty('--sw',innerWidth+'px');st.setProperty('--sh',innerHeight+'px')}
 function resize(){updateRot();const w=ROT?innerHeight:innerWidth,h=ROT?innerWidth:innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
@@ -1830,7 +1844,7 @@ function buildShell(ox){
  hide.push(plane(16,12,ds.mat('ceil',8,6),0,3.4,0,Math.PI/2,0,g));
  const bk=[box(16,3.4,.2,ds.mat('wall',6,2),0,1.7,-6.1,g)];box(.2,3.4,12.4,ds.mat('wall',4.65,2),-8.1,1.7,0,g);box(.2,3.4,12.4,ds.mat('wall',4.65,2),8.1,1.7,0,g);
  bk.push(box(16,1,.04,ds.mat('wain',6,.6),0,.5,-5.98,g,false));box(.04,1,12,ds.mat('wain',4.5,.6),-7.98,.5,0,g,false);box(.04,1,12,ds.mat('wain',4.5,.6),7.98,.5,0,g,false);
- const fw=(w,h,x,y)=>{hide.push(box(w,h,.3,ds.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1,g),plane(w,h,MAT.brick,x,y,6.26,0,0,g))};
+ const fw=(w,h,x,y)=>{hide.push(box(w,h,.3,ds.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1,g),plane(w,h,MAT.brick,x,y,6.285,0,0,g))};
  fw(2,3.4,-7,1.7);fw(1.8,1.0,-5.1,2.9);fw(1.0,3.4,-3.7,1.7);fw(10.6,.7,1.9,.35);fw(10.6,.7,1.9,3.05);fw(.8,3.4,7.6,1.7);
  hide.push(plane(10.6,2,MAT.glass,1.9,1.7,6.12,0,0,g));for(const x of [-3.2,.3,3.8,7.1])hide.push(box(.08,2,.12,MAT.metalDark,x,1.7,6.15,g));
  const aw=awning.clone();g.add(aw);hide.push(aw);
@@ -1935,7 +1949,7 @@ function gainXP(n){if(!S||!n)return;const a=lvOf();S.xp+=n;if(R)R.ds.xp=(R.ds.xp
 function levelUp(l){SFX.rare();const list=(LV_UNLOCK[l]||[]).join(', ');
  if(overlayOpen()||(R&&R.pay))return toast(`Lên cấp ${l}! Mở khóa: ${list}`);
  showOv(`<h2>Tiệm lên cấp ${l}!</h2><p class="meta">Tiệm của bạn càng ngày càng có tiếng. Vừa mở khóa:</p><ul class="unl">${(LV_UNLOCK[l]||[]).map(x=>`<li>${x}</li>`).join('')}</ul><div class="row"><button class="primary" data-act="close">Tuyệt!</button></div>`)}
-const custCap=()=>lvOf()>=11?20:lvOf()>=6?16:12;
+const custCap=()=>lvOf()>=11?28:lvOf()>=6?22:16;
 const rentNow=()=>RENT+(S?(S.depthN|0)*50+(S.annex?80:0):0);
 const lvSpend=()=>lvOf()>=10?1.1:1;
 
@@ -2829,7 +2843,7 @@ EXT.expand=()=>{const k=(S.depthN|0)+1;if(k>=EXPZ.length||lvOf()<EXPLV[k]||S.mon
 EXT.annex=()=>{if(S.annex||lvOf()<ANX.lv||S.money<ANX.cost)return;S.money-=ANX.cost;S.annex=true;rebuildBody();save();if(ONLINE){pushShop(true);rebuildGaps()}closeOv();SFX.vnd();toast('Khu trưng bày bên trái đã mở! Đặt tủ kính, hộp đèn để khoe thẻ và thú bông hiếm.')};
 function buildShell(ox){
  const ds=new DecoSet();const g=new THREE.Group();g.position.x=ox;scene.add(g);const hide=[];
- const fw=(w,h,x,y)=>{hide.push(box(w,h,.3,ds.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1,g),plane(w,h,MAT.brick,x,y,6.26,0,0,g))};
+ const fw=(w,h,x,y)=>{hide.push(box(w,h,.3,ds.mat('wall',+(w*6/16).toFixed(2),+(h*2/3.4).toFixed(2)),x,y,6.1,g),plane(w,h,MAT.brick,x,y,6.285,0,0,g))};
  fw(2,3.4,-7,1.7);fw(1.8,1.0,-5.1,2.9);fw(1.0,3.4,-3.7,1.7);fw(10.6,.7,1.9,.35);fw(10.6,.7,1.9,3.05);fw(.8,3.4,7.6,1.7);
  hide.push(plane(10.6,2,MAT.glass,1.9,1.7,6.12,0,0,g));for(const x of [-3.2,.3,3.8,7.1])hide.push(box(.08,2,.12,MAT.metalDark,x,1.7,6.15,g));
  const aw=awning.clone();g.add(aw);hide.push(aw);hide.push(box(15,.95,.2,MAT.ink,.3,4.05,6.35,g));
@@ -3368,18 +3382,13 @@ EXT.caseAuto=()=>{const f=CASEF,T=FURN[f.type];const by=(a,b)=>cardPrice(b)-card
  for(let i=0;i<f.slots.length;i++){if(f.slots[i])continue;const c=next();if(!c)break;S.cards[c.id]--;f.slots[i]={id:c.id};put++}
  drawCase(f);SFX.place();save();renderCase();toast(put?`Đã bày ${put} lá.`:'Hết thẻ để bày rồi.')};
 EXT.caseClear=()=>{const f=CASEF;let n=0;f.slots.forEach((s,i)=>{if(s){S.cards[s.id]=(S.cards[s.id]||0)+1;f.slots[i]=null;n++}});drawCase(f);SFX.place();save();renderCase();toast(`Đã cất ${n} lá về túi.`)};
-// màn hình xoay (điện thoại dọc chơi ngang): tự cuộn bảng theo hướng ngón tay
-{let sc=null,lx=0,ly=0;const findSc=el=>{while(el&&el!==document.body){const cs=getComputedStyle(el);if(/(auto|scroll)/.test(cs.overflowY)&&el.scrollHeight>el.clientHeight+2)return el;el=el.parentElement}return null};
- const ovEl=$('#ov');
- ovEl.addEventListener('touchstart',e=>{if(!document.body.classList.contains('rot')){sc=null;return}const t=e.touches[0];sc=findSc(e.target);lx=t.clientX;ly=t.clientY},{passive:true});
- ovEl.addEventListener('touchmove',e=>{if(!sc||!document.body.classList.contains('rot'))return;const t=e.touches[0],dx=t.clientX-lx;lx=t.clientX;ly=t.clientY;sc.scrollTop+=dx;e.preventDefault()},{passive:false})}
 
 
 // =====================================================================
 // ================= ĐỢT 6: nút cuộn bảng trên điện thoại, chỉnh giá từng món, nhạc nền chill
 // =====================================================================
 // ---------- nút cuộn lên / xuống cho mọi bảng (chạy được cả khi màn hình xoay)
-const ovScroller=()=>{const c=$('#ovc');if(!c||$('#ov').hidden)return null;let best=null,bh=0;for(const el of [c,...c.querySelectorAll('*')]){const d=el.scrollHeight-el.clientHeight;if(d>8&&el.clientHeight>60){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&d>bh){best=el;bh=d}}}return best};
+let ovScroller=()=>{const c=$('#ovc');if(!c||$('#ov').hidden)return null;let best=null,bh=0;for(const el of [c,...c.querySelectorAll('*')]){const d=el.scrollHeight-el.clientHeight;if(d>8&&el.clientHeight>60){const o=getComputedStyle(el).overflowY;if((o==='auto'||o==='scroll')&&d>bh){best=el;bh=d}}}return best};
 {const box=document.createElement('div');box.id='ovScroll';box.hidden=true;box.innerHTML='<button data-sc="-1" aria-label="Cuộn lên">▲</button><button data-sc="1" aria-label="Cuộn xuống">▼</button>';$('#ov').appendChild(box);
  const go=d=>{const s=ovScroller();if(!s)return;s.scrollTop=Math.max(0,Math.min(s.scrollHeight,s.scrollTop+d*Math.max(120,s.clientHeight*.7)));upd()};
  const upd=()=>{const s=isTouch?ovScroller():null;box.hidden=!s;if(s){box.children[0].disabled=s.scrollTop<4;box.children[1].disabled=s.scrollTop+s.clientHeight>=s.scrollHeight-4}};
@@ -3459,6 +3468,124 @@ EXT.musNext=()=>{S.musSty=((S.musSty||0)+1)%MSTY.length;MUS.bar=0;save();openSet
 EXT.musVol=b=>{S.musVol=clamp(Math.round(((S.musVol==null?.5:S.musVol)+(+b.dataset.d)/100)*10)/10,0,1);save();openSettings()};
 // ---------- danh mục nội thất: thêm Thú bông và Quầy tính tiền (trước đây bị thiếu nên không mua được)
 FCATS.splice(2,0,['plush','Tủ & bàn thú bông',T=>T.kind==='pcase'],['counter','Quầy tính tiền',T=>T.kind==='counter']);
+
+
+// =====================================================================
+// ================= ĐỢT 7: màn hình iPhone, cuộn mượt, chọn thẻ, cất/bán nội thất, khách đông hơn, online đồng bộ
+// =====================================================================
+// ---------- iPhone: luôn khớp kích thước màn hình, không bị trôi lệch
+{let lw=0,lh=0;const fit=()=>{if(scrollX||scrollY)scrollTo(0,0);const w=innerWidth,h=innerHeight;if(w!==lw||h!==lh){lw=w;lh=h;resize()}};
+ setInterval(fit,400);if(window.visualViewport){visualViewport.addEventListener('resize',()=>setTimeout(fit,60));visualViewport.addEventListener('scroll',()=>setTimeout(fit,60))}
+ document.addEventListener('focusout',()=>setTimeout(fit,250));window.addEventListener('pageshow',()=>setTimeout(fit,100))}
+
+// ---------- khi bảng đang mở: vẽ cảnh 3D thưa lại cho bảng lướt mượt
+let OVSKIP=0;
+const ovSkipRender=()=>{if(!overlayOpen()||!S)return false;OVSKIP=(OVSKIP+1)%8;return OVSKIP!==0};
+
+// ---------- cuộn bảng bằng ngón tay khi màn hình xoay (có quán tính) + tính lại nút cuộn nhẹ nhàng
+let OVSC=null;
+const findOvSc=()=>{const c=$('#ovc');if(!c||$('#ov').hidden)return null;let best=null,bh=0;for(const el of [c,...c.querySelectorAll('.clist,.pgrid,.pc-body,.list,div')]){const d=el.scrollHeight-el.clientHeight;if(d>8&&el.clientHeight>60&&d>bh){const o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll'){best=el;bh=d}}}return best};
+ovScroller=()=>{if(OVSC&&OVSC.isConnected&&OVSC.scrollHeight-OVSC.clientHeight>8)return OVSC;OVSC=findOvSc();return OVSC};
+new MutationObserver(()=>{OVSC=null}).observe($('#ovc'),{childList:true});
+{const ov=$('#ov');let st=null;
+ const loc=e=>document.body.classList.contains('rot')?e.clientX:-e.clientY;
+ ov.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||!document.body.classList.contains('rot'))return;const sc=ovScroller();if(!sc||e.target.closest('#ovScroll,input,select,textarea'))return;
+  if(st&&st.raf)cancelAnimationFrame(st.raf);st={sc,id:e.pointerId,p:loc(e),v:0,t:performance.now(),moved:0,raf:0}},{passive:true});
+ ov.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const p=loc(e),d=p-st.p,now=performance.now(),dt=Math.max(1,now-st.t);st.p=p;st.t=now;st.moved+=Math.abs(d);st.sc.scrollTop+=d;st.v=d/dt*.85+st.v*.15},{passive:true});
+ const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;if(s.moved>10){ov.dataset.drag='1';setTimeout(()=>delete ov.dataset.drag,60)}let v=s.v*16;if(Math.abs(v)<1)return;
+  const run=()=>{s.sc.scrollTop+=v;v*=.94;if(Math.abs(v)>.4)s.raf=requestAnimationFrame(run)};s.raf=requestAnimationFrame(run)};
+ ov.addEventListener('pointerup',end);ov.addEventListener('pointercancel',end);
+ ov.addEventListener('click',e=>{if(ov.dataset.drag){e.stopPropagation();e.preventDefault()}},true)}
+
+// ---------- chọn thẻ bày tủ theo trang (không cần cuộn)
+const CPK={page:0,sort:'price'};
+function openCasePicker(){const f=CASEF;if(!f)return;const T=FURN[f.type],n=f.slots.filter(Boolean).length;
+ const by={price:(a,b)=>cardPrice(b)-cardPrice(a),rar:(a,b)=>(RORD[b.rar]||0)-(RORD[a.rar]||0)||cardPrice(b)-cardPrice(a),dup:(a,b)=>(S.cards[b.id]-S.cards[a.id])||cardPrice(b)-cardPrice(a)}[CPK.sort];
+ const L=CARDS.filter(c=>S.cards[c.id]>0&&caseOK(T,c)).sort(by),per=($('#stage').clientHeight<520)?6:12,pages=Math.max(1,Math.ceil(L.length/per));CPK.page=clamp(CPK.page,0,pages-1);const vis=L.slice(CPK.page*per,CPK.page*per+per);
+ showOv(`<div class="spread"><h2>Chọn thẻ bày · ${n}/${T.slots}</h2><button class="primary" data-act="cpkDone">Xong</button></div>
+ <div class="row"><span class="meta">Xếp theo:</span>${[['price','Đắt nhất'],['rar','Hiếm nhất'],['dup','Trùng nhiều']].map(([k,t])=>`<button class="${CPK.sort===k?'primary':''}" data-act="cpkSort" data-k="${k}">${t}</button>`).join('')}</div>
+ ${L.length?`<div class="cpk">${vis.map(c=>`<button class="cpkc" data-act="cpkPick" data-id="${c.id}" ${n>=T.slots?'disabled':''}><div class="cimg" data-cid="${c.id}"></div><b>${esc(c.name)}</b><span>${fmt(casePrice(c))} · có ${S.cards[c.id]}</span></button>`).join('')}</div>
+ <div class="row" style="justify-content:center"><button data-act="cpkPg" data-d="-1" ${CPK.page<=0?'disabled':''}>◀ Trang trước</button><b>${CPK.page+1} / ${pages}</b><button data-act="cpkPg" data-d="1" ${CPK.page>=pages-1?'disabled':''}>Trang sau ▶</button></div>`:`<p class="meta">${T.rare?'Chưa có thẻ Siêu hiếm trở lên.':'Chưa có thẻ nào, bóc gói thẻ trước nhé.'}</p>`}`);fillCardImgs()}
+const RORD={C:1,U:2,R:3,SR:4,SEC:5,UR:6,VND:7};
+EXT.caseJump=()=>{CPK.page=0;openCasePicker()};
+EXT.cpkSort=b=>{CPK.sort=b.dataset.k;CPK.page=0;openCasePicker()};
+EXT.cpkPg=b=>{CPK.page+=+b.dataset.d;openCasePicker()};
+EXT.cpkDone=()=>renderCase();
+EXT.cpkPick=b=>{const f=CASEF,id=+b.dataset.id,i=f.slots.indexOf(null);if(i<0)return toast('Tủ đã đầy.');if(!(S.cards[id]>0))return;S.cards[id]--;f.slots[i]={id};drawCase(f);SFX.place();save();if(f.slots.indexOf(null)<0){toast('Tủ đã đầy.');return renderCase()}openCasePicker()};
+const _rc7=renderCase;
+renderCase=function(){_rc7();const b=$('#ovc [data-act=caseAuto]');if(b&&!$('#ovc [data-act=caseJump][data-x]')){const p=document.createElement('button');p.dataset.act='caseJump';p.dataset.x=1;p.className='primary';p.textContent='Chọn thẻ để bày';b.before(p)}};
+
+// ---------- cất nội thất vào kho / bán lại
+function furnEmpty(f){let n=0;if(f.tiers)f.tiers.forEach((t,i)=>{if(t.p&&t.q>0){S.bag[t.p]=(S.bag[t.p]||0)+t.q;n+=t.q}t.q=0;t.p=null;tierSync&&tierSync(f,i)});
+ if(f.slots)f.slots.forEach((s,i)=>{if(s){S.cards[s.id]=(S.cards[s.id]||0)+1;f.slots[i]=null;n++}});
+ if(f.pslots)f.pslots.forEach((id,i)=>{if(id!=null){S.plush[id]=(S.plush[id]||0)+1;f.pslots[i]=null;n++}});return n}
+function furnBlock(f){const T=FURN[f.type];if(T.kind==='desk')return 'Bàn máy tính dùng để đặt hàng, không cất được.';if(T.kind==='counter'&&counters().length<1)return 'Tiệm cần ít nhất 1 quầy tính tiền. Mua quầy mới đặt xong rồi hãy cất quầy cũ.';if(T.kind==='counter'&&f.q&&f.q.length)return 'Quầy đang có khách xếp hàng.';return ''}
+function furnGone(f){removeFurn(f);held=null;ghostM.visible=false;ghostBox.visible=false;moveGrid.visible=false;navDirty=true;if(R)R.custs.forEach(c=>{if(c.shelf===f){c.shelf=null;if(c.st==='toShelf'||c.st==='browse')next(c)}});save();if(ONLINE)pushShop(true)}
+EXT.furnStore=()=>{if(!held||held.kind!=='furn')return;const f=held.f,why=furnBlock(f);if(why){SFX.err();return toast(why)}const n=furnEmpty(f);S.furnBag=S.furnBag||{};S.furnBag[f.type]=(S.furnBag[f.type]||0)+1;furnGone(f);SFX.place();toast(`Đã cất ${FURN[f.type].n.toLowerCase()} vào kho (Túi đồ).${n?` ${n} món bày trên đó đã về túi.`:''}`)};
+EXT.furnSell=()=>{if(!held||held.kind!=='furn')return;const f=held.f,why=furnBlock(f);if(why){SFX.err();return toast(why)}const v=Math.round((FURN[f.type].cost||300)*.5);const n=furnEmpty(f);furnGone(f);S.money+=v;SFX.cash();toast(`Đã bán ${FURN[f.type].n.toLowerCase()}, nhận lại ${fmt(v)}.${n?` ${n} món bày trên đó đã về túi.`:''}`)};
+EXT.furnCancel=()=>cancelMove();
+EXT.furnRot=()=>rotateHeld(1);
+const _cm7=cancelMove;
+cancelMove=function(){if(held&&held.kind==='furn'&&held.fromBag){const f=held.f;removeFurn(f);S.furnBag[f.type]=(S.furnBag[f.type]||0)+1;held=null;ghostM.visible=false;ghostBox.visible=false;moveGrid.visible=false;navDirty=true;toast('Đã cất lại vào kho.');return}return _cm7()};
+EXT.bagFurn=b=>{const type=b.dataset.t;if(held)return toast('Đặt đồ trên tay xuống trước đã.');if(!(S.furnBag&&S.furnBag[type]>0))return;S.furnBag[type]--;if(!S.furnBag[type])delete S.furnBag[type];const f={type,x:player.x,z:player.z,rot:0};buildFurn(f);furns.push(f);held={kind:'furn',f,prev:null,isNew:true,fromBag:true,ok:false};closeOv();SFX.place();toast(`Đang đặt ${FURN[type].n.toLowerCase()}: chọn chỗ rồi bấm Đặt.`)};
+const _ob7=openBag;
+openBag=function(){_ob7();const B=S.furnBag||{},ks=Object.keys(B).filter(k=>B[k]>0&&FURN[k]);const box=document.createElement('div');
+ box.innerHTML=`<h3>Nội thất trong kho</h3>${ks.length?ks.map(k=>`<div class="prod" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${FURN[k].n} × ${B[k]}</b><p class="meta">${esc(FURN[k].desc||'')}</p></div><div class="row"><button class="primary" data-act="bagFurn" data-t="${k}" ${held?'disabled':''}>Lấy ra đặt</button></div></div>`).join(''):'<p class="meta">Kho trống. Muốn cất đồ: nhìn vào món đồ, giữ 3 giây (hoặc phím M) để dời, rồi bấm <b>Cất vào kho</b> hoặc <b>Bán lại</b>.</p>'}`;
+ $('#ovc').appendChild(box)};
+{const bar=document.createElement('div');bar.id='furnBar';bar.hidden=true;bar.innerHTML='<b id="fbName"></b><button data-fb="furnRot">Xoay</button><button data-fb="furnStore">Cất vào kho</button><button data-fb="furnSell" id="fbSell">Bán lại</button><button data-fb="furnCancel">Hủy</button>';$('#stage').appendChild(bar);
+ bar.addEventListener('click',e=>{const b=e.target.closest('[data-fb]');if(b&&EXT[b.dataset.fb])EXT[b.dataset.fb](b)});
+ bar.addEventListener('touchend',e=>{const b=e.target.closest('[data-fb]');if(b){e.preventDefault();if(EXT[b.dataset.fb])EXT[b.dataset.fb](b)}},{passive:false});
+ setInterval(()=>{const on=!!(S&&held&&held.kind==='furn'&&!overlayOpen());bar.hidden=!on;if(on){const T=FURN[held.f.type],nm=T.n,sv=`Bán lại · +${fmt(Math.round((T.cost||300)*.5))}`;if($('#fbName').textContent!==nm)$('#fbName').textContent=nm;if($('#fbSell').textContent!==sv)$('#fbSell').textContent=sv}},150)}
+
+// ---------- khách đông hơn
+function spawnInterval(){const h=hourNow(),rush=(h>=11&&h<13)||(h>=17&&h<19)?.65:1;return clamp(15/attraction().v,3.5,40)*rush}
+
+// ---------- khách có “ngoại hình” cố định để gửi cho bạn bè xem
+let CUID=0;
+const _sc7=spawnCust;
+spawnCust=function(){const n0=R.custs.length;_sc7();const c=R.custs[R.custs.length-1];if(c&&R.custs.length>n0){c.id=++CUID;const u=c.g.userData||{};c.look=[Math.floor(Math.random()*SHIRTS.length),Math.floor(Math.random()*SKINS.length),Math.floor(Math.random()*HAIRS.length),Math.floor(Math.random()*PANTS.length)];
+ // dựng lại người theo ngoại hình đã chọn để bên mình và bên bạn giống nhau
+ const pos=c.g.position.clone(),bub=c.bub;scene.remove(c.g);const g=makePerson(SHIRTS[c.look[0]],SKINS[c.look[1]],HAIRS[c.look[2]],PANTS[c.look[3]]);g.position.copy(pos);scene.add(g);g.add(bub);c.g=g}};
+
+// ---------- online: đồng bộ giờ mở/đóng cửa và thấy khách của nhau
+let SRVOFF=0;
+const srvNow=()=>Date.now()+SRVOFF;
+const clockRun=O=>!!(O&&O.clock&&O.clock.at&&srvNow()-O.clock.at<DAY_SEC*1000&&srvNow()-O.clock.at>-5000);
+const _so7=setupOnline;
+setupOnline=function(){_so7();const O=ONLINE;O.rcust={};O.custT=0;O.clock=null;
+ try{const r=fbDb.ref('.info/serverTimeOffset');listen(r,'value',s=>{SRVOFF=+s.val()||0})}catch(e){}
+ listen(O.base.child('clock'),'value',s=>{O.clock=s.val();clockCheck()});
+ const cr=O.base.child('cust');const me=cr.child(O.uid);try{me.onDisconnect().remove()}catch(e){}
+ listen(cr,'child_added',s=>remoteCust(s.key,s.val()));listen(cr,'child_changed',s=>remoteCust(s.key,s.val()));listen(cr,'child_removed',s=>remoteCust(s.key,null))};
+function clockCheck(){const O=ONLINE;if(!O||!R||!S)return;if(!clockRun(O))return;
+ if(!R.started&&!R.summary&&!R.pay){S.day=Math.max(S.day,O.clock.day|0);R.open=true;R.started=true;R.spawnT=2;R.t=clamp((srvNow()-O.clock.at)/1000,0,DAY_SEC);drawSign();SFX.bell();pushShop(true);
+  toast(`Cả phố mở cửa ngày ${S.day}${O.clock.by&&O.clock.by!==O.pname?` (${O.clock.by} mở)`:''}. Tiệm bạn mở theo, đóng cửa cùng lúc 22:00.`)}}
+const _to7=toggleOpen;
+toggleOpen=function(){const O=ONLINE;if(!O||!R)return _to7();
+ if(R.open)return toast('Chơi chung: cả phố đóng cửa cùng lúc lúc 22:00.');
+ if(R.started)return toast('Hôm nay đã đóng cửa. Chờ khách cuối về là sang ngày mới.');
+ if(clockRun(O))return clockCheck();
+ O.base.child('clock').transaction(c=>{if(c&&c.at&&srvNow()-c.at<DAY_SEC*1000)return;return{day:Math.max(((c&&c.day)|0)+1,S.day),at:firebase.database.ServerValue.TIMESTAMP,by:O.pname}}).then(()=>setTimeout(clockCheck,300)).catch(e=>toast('Không mở được: '+e.message));
+ toast('Đang mở cửa cả phố...')};
+function pushCust(){const O=ONLINE;if(!O||!R)return;const now=performance.now();if(now-O.custT<260)return;O.custT=now;
+ const s=R.custs.filter(c=>c.id&&c.look).map(c=>{const p=c.g.position;const w=c.st!=='browse'&&c.st!=='queue'&&c.st!=='wait'?1:0;return [c.id,+(p.x-O.shift).toFixed(2),+p.z.toFixed(2),+c.g.rotation.y.toFixed(2),c.look.join(''),w].join(',')}).join(';');
+ if(s===O.custLast&&now-O.custSent<4000)return;O.custLast=s;O.custSent=now;O.base.child('cust/'+O.uid).set(s||'-')}
+function remoteCust(uid,v){const O=ONLINE;if(!O||uid===O.uid)return;const M=O.rcust[uid]=O.rcust[uid]||{};
+ const seen={};if(v&&v!=='-')for(const row of String(v).split(';')){const a=row.split(','),id=a[0];if(!id)continue;seen[id]=1;const lk=a[4]||'0000';let m=M[id];
+  if(!m){const L=[...lk].map(Number);const g=makePerson(SHIRTS[L[0]%SHIRTS.length],SKINS[L[1]%SKINS.length],HAIRS[L[2]%HAIRS.length],PANTS[L[3]%PANTS.length]);g.position.set(+a[1]+O.shift,0,+a[2]);scene.add(g);m=M[id]={g}}
+  m.tx=+a[1]+O.shift;m.tz=+a[2];m.ty=+a[3];m.w=a[5]==='1'}
+ for(const id in M)if(!seen[id]){scene.remove(M[id].g);delete M[id]}
+ if(!v)delete O.rcust[uid]}
+const _uo7=updateOnline;
+updateOnline=function(dt){_uo7(dt);const O=ONLINE;if(!O)return;
+ if(clockRun(O)&&R&&R.open){R.t=clamp((srvNow()-O.clock.at)/1000,0,DAY_SEC);S.t=R.t;if((O.clock.day|0)>S.day)S.day=O.clock.day|0}else if(clockRun(O)&&R&&!R.started)clockCheck();
+ pushCust();
+ for(const uid in O.rcust){const M=O.rcust[uid];for(const id in M){const m=M[id],g=m.g,dx=m.tx-g.position.x,dz=m.tz-g.position.z,d=Math.hypot(dx,dz);if(d>5){g.position.x=m.tx;g.position.z=m.tz}else{const k=Math.min(1,dt*6);g.position.x+=dx*k;g.position.z+=dz*k}
+  let df=m.ty-g.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));g.rotation.y+=df*Math.min(1,dt*8);animPerson(g,d>.03||m.w&&d>.01,dt)}}};
+const _dp7=dropPlayer;
+dropPlayer=function(uid){_dp7(uid);const O=ONLINE;if(O&&O.rcust&&O.rcust[uid]){for(const id in O.rcust[uid])scene.remove(O.rcust[uid][id].g);delete O.rcust[uid]}};
+const _lo7=leaveOnline;
+leaveOnline=function(){const O=ONLINE;if(O){try{O.base.child('cust/'+O.uid).remove()}catch(e){}if(O.rcust)for(const u in O.rcust)for(const id in O.rcust[u])scene.remove(O.rcust[u][id].g)}return _lo7()};
 
 function migrateOld(){if(!S.crew){S.crew=[];const old=S.staff||{};if(old.cashier)S.crew.push({id:hash('oldc'),name:'Chị Lan',role:'cashier',star:2,shirt:0xff7aa8,hair:0x2b1d14,skin:SKINS[0]});if(old.stocker)S.crew.push({id:hash('olds'),name:'Anh Tùng',role:'stocker',star:2,shirt:0x4cc36b,hair:0x1b1f33,skin:SKINS[2]})}
  if(S.figs&&!S.plushMig){S.plushMig=true;for(const k in S.figs){const n=S.figs[k]|0;for(let i=0;i<n;i++){if(k==='vnd')addPlush(VND);else{const t=k.replace('*',''),L=byRar('SR').filter(c=>c.type===t);if(L.length)addPlush(pick(L))}}}}}
