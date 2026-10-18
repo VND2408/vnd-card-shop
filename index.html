@@ -421,10 +421,10 @@ body.rot #prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;ma
 @media (max-height:520px){.slot8.empty{min-height:64px;cursor:pointer}}
 body.rot .slot8.empty{min-height:64px}
 .slot8.empty{cursor:pointer}
-#ovScroll{position:absolute;right:max(6px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:3}
-#ovScroll[hidden]{display:none}
-#ovScroll button{width:50px;height:50px;border-radius:50%;padding:0;font-size:20px;background:var(--sun);border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);opacity:.95}
-#ovScroll button:disabled{opacity:.35}
+#ovScroll,.tScroll{position:absolute;right:max(6px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:3}
+#ovScroll[hidden],.tScroll[hidden]{display:none}
+#ovScroll button,.tScroll button{width:50px;height:50px;border-radius:50%;padding:0;font-size:20px;background:var(--sun);border:3px solid var(--ink);box-shadow:0 3px 0 var(--ink);opacity:.95}
+#ovScroll button:disabled,.tScroll button:disabled{opacity:.35}
 .pedrow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
 .pedin{display:inline-flex;align-items:center;gap:4px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:4px 10px}
 .pedin input{width:110px;border:0;outline:0;background:none;font:800 26px var(--f-display);text-align:right;color:var(--ink)}
@@ -432,6 +432,7 @@ body.rot .slot8.empty{min-height:64px}
 .pedin.sm{padding:2px 8px;border-width:2px;border-radius:9px}.pedin.sm input{width:64px;font-size:17px}.pedin.sm span{font-size:13px}
 body.touch .prange{display:none}
 body.touch .card{padding-right:62px}
+body.touch #title .card{padding-right:62px}
 html,body{overscroll-behavior:none;position:fixed;inset:0;width:100%;height:100%}
 body.rot .ov,body.rot .ov *{touch-action:none}
 body.rot .ov input,body.rot .ov textarea{touch-action:manipulation}
@@ -3487,15 +3488,17 @@ let OVSC=null;
 const findOvSc=()=>{const c=$('#ovc');if(!c||$('#ov').hidden)return null;let best=null,bh=0;for(const el of [c,...c.querySelectorAll('.clist,.pgrid,.pc-body,.list,div')]){const d=el.scrollHeight-el.clientHeight;if(d>8&&el.clientHeight>60&&d>bh){const o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll'){best=el;bh=d}}}return best};
 ovScroller=()=>{if(OVSC&&OVSC.isConnected&&OVSC.scrollHeight-OVSC.clientHeight>8)return OVSC;OVSC=findOvSc();return OVSC};
 new MutationObserver(()=>{OVSC=null}).observe($('#ovc'),{childList:true});
-{const ov=$('#ov');let st=null;
- const loc=e=>document.body.classList.contains('rot')?e.clientX:-e.clientY;
- ov.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||!document.body.classList.contains('rot'))return;const sc=ovScroller();if(!sc||e.target.closest('#ovScroll,input,select,textarea'))return;
-  if(st&&st.raf)cancelAnimationFrame(st.raf);st={sc,id:e.pointerId,p:loc(e),v:0,t:performance.now(),moved:0,raf:0}},{passive:true});
- ov.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const p=loc(e),d=p-st.p,now=performance.now(),dt=Math.max(1,now-st.t);st.p=p;st.t=now;st.moved+=Math.abs(d);st.sc.scrollTop+=d;st.v=d/dt*.85+st.v*.15},{passive:true});
- const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;if(s.moved>10){ov.dataset.drag='1';setTimeout(()=>delete ov.dataset.drag,60)}let v=s.v*16;if(Math.abs(v)<1)return;
+{let st=null;
+ const loc=e=>e.clientX;
+ const scOf=el=>{while(el&&el!==document.body){if(el.scrollHeight-el.clientHeight>4){const o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll')return el}if(el.classList&&el.classList.contains('ov'))break;el=el.parentElement}return null};
+ document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||!document.body.classList.contains('rot'))return;if(!e.target.closest||!e.target.closest('.ov')||e.target.closest('#ovScroll,input,select,textarea'))return;
+  const sc=scOf(e.target)||(e.target.closest('#ov')?ovScroller():null);if(!sc)return;if(st&&st.raf)cancelAnimationFrame(st.raf);st={sc,id:e.pointerId,p:loc(e),v:0,t:performance.now(),moved:0,raf:0}},{passive:true,capture:true});
+ document.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const p=loc(e),d=p-st.p,now=performance.now(),dt=Math.max(1,now-st.t);st.p=p;st.t=now;st.moved+=Math.abs(d);st.sc.scrollTop+=d;st.v=d/dt*.85+st.v*.15},{passive:true,capture:true});
+ let drag=false;
+ const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;if(s.moved>10){drag=true;setTimeout(()=>drag=false,80)}let v=s.v*16;if(Math.abs(v)<1)return;
   const run=()=>{s.sc.scrollTop+=v;v*=.94;if(Math.abs(v)>.4)s.raf=requestAnimationFrame(run)};s.raf=requestAnimationFrame(run)};
- ov.addEventListener('pointerup',end);ov.addEventListener('pointercancel',end);
- ov.addEventListener('click',e=>{if(ov.dataset.drag){e.stopPropagation();e.preventDefault()}},true)}
+ document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
+ document.addEventListener('click',e=>{if(drag){e.stopPropagation();e.preventDefault()}},true)}
 
 // ---------- chọn thẻ bày tủ theo trang (không cần cuộn)
 const CPK={page:0,sort:'price'};
@@ -3586,6 +3589,12 @@ const _dp7=dropPlayer;
 dropPlayer=function(uid){_dp7(uid);const O=ONLINE;if(O&&O.rcust&&O.rcust[uid]){for(const id in O.rcust[uid])scene.remove(O.rcust[uid][id].g);delete O.rcust[uid]}};
 const _lo7=leaveOnline;
 leaveOnline=function(){const O=ONLINE;if(O){try{O.base.child('cust/'+O.uid).remove()}catch(e){}if(O.rcust)for(const u in O.rcust)for(const id in O.rcust[u])scene.remove(O.rcust[u][id].g)}return _lo7()};
+// nút cuộn cho màn hình chính (chọn ô lưu, chơi online)
+{const T=$('#title'),box=document.createElement('div');box.className='tScroll';box.id='tScroll';box.hidden=true;box.innerHTML='<button data-sc="-1" aria-label="Cuộn lên">▲</button><button data-sc="1" aria-label="Cuộn xuống">▼</button>';T.appendChild(box);
+ const sc=()=>T.querySelector('.card');
+ const go=d=>{const s=sc();if(!s)return;s.scrollTop=Math.max(0,s.scrollTop+d*Math.max(120,s.clientHeight*.7))};
+ for(const b of box.children){const d=+b.dataset.sc;b.addEventListener('click',e=>{e.stopPropagation();go(d)})}
+ setInterval(()=>{const s=sc(),on=isTouch&&!T.hidden&&s&&s.scrollHeight>s.clientHeight+8;box.hidden=!on;if(on){box.children[0].disabled=s.scrollTop<4;box.children[1].disabled=s.scrollTop+s.clientHeight>=s.scrollHeight-4}},350)}
 
 function migrateOld(){if(!S.crew){S.crew=[];const old=S.staff||{};if(old.cashier)S.crew.push({id:hash('oldc'),name:'Chị Lan',role:'cashier',star:2,shirt:0xff7aa8,hair:0x2b1d14,skin:SKINS[0]});if(old.stocker)S.crew.push({id:hash('olds'),name:'Anh Tùng',role:'stocker',star:2,shirt:0x4cc36b,hair:0x1b1f33,skin:SKINS[2]})}
  if(S.figs&&!S.plushMig){S.plushMig=true;for(const k in S.figs){const n=S.figs[k]|0;for(let i=0;i<n;i++){if(k==='vnd')addPlush(VND);else{const t=k.replace('*',''),L=byRar('SR').filter(c=>c.type===t);if(L.length)addPlush(pick(L))}}}}}
