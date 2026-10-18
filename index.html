@@ -447,6 +447,8 @@ body.rot .ov input,body.rot .ov textarea{touch-action:manipulation}
 .cpkc .cimg{max-width:84px}
 @media (max-height:520px){.cpk{grid-template-columns:repeat(6,minmax(0,1fr))}.cpkc .cimg{max-width:64px}#furnBar{top:calc(env(safe-area-inset-top,0px) + 46px)}}
 body.rot .cpk{grid-template-columns:repeat(6,minmax(0,1fr))}body.rot .cpkc .cimg{max-width:64px}body.rot #furnBar{top:calc(env(safe-area-inset-top,0px) + 92px)}
+#ovScroll,.tScroll{display:none!important}
+body.touch .card,body.touch #title .card{padding-right:12px}
 
 </style>
 </head>
@@ -3488,16 +3490,20 @@ let OVSC=null;
 const findOvSc=()=>{const c=$('#ovc');if(!c||$('#ov').hidden)return null;let best=null,bh=0;for(const el of [c,...c.querySelectorAll('.clist,.pgrid,.pc-body,.list,div')]){const d=el.scrollHeight-el.clientHeight;if(d>8&&el.clientHeight>60&&d>bh){const o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll'){best=el;bh=d}}}return best};
 ovScroller=()=>{if(OVSC&&OVSC.isConnected&&OVSC.scrollHeight-OVSC.clientHeight>8)return OVSC;OVSC=findOvSc();return OVSC};
 new MutationObserver(()=>{OVSC=null}).observe($('#ovc'),{childList:true});
-{let st=null;
- const loc=e=>e.clientX;
+{let st=null,drag=false;
+ const isRot=()=>document.body.classList.contains('rot');
  const scOf=el=>{while(el&&el!==document.body){if(el.scrollHeight-el.clientHeight>4){const o=getComputedStyle(el).overflowY;if(o==='auto'||o==='scroll')return el}if(el.classList&&el.classList.contains('ov'))break;el=el.parentElement}return null};
- document.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||!document.body.classList.contains('rot'))return;if(!e.target.closest||!e.target.closest('.ov')||e.target.closest('#ovScroll,input,select,textarea'))return;
-  const sc=scOf(e.target)||(e.target.closest('#ov')?ovScroller():null);if(!sc)return;if(st&&st.raf)cancelAnimationFrame(st.raf);st={sc,id:e.pointerId,p:loc(e),v:0,t:performance.now(),moved:0,raf:0}},{passive:true,capture:true});
- document.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;const p=loc(e),d=p-st.p,now=performance.now(),dt=Math.max(1,now-st.t);st.p=p;st.t=now;st.moved+=Math.abs(d);st.sc.scrollTop+=d;st.v=d/dt*.85+st.v*.15},{passive:true,capture:true});
- let drag=false;
- const end=e=>{if(!st||e.pointerId!==st.id)return;const s=st;st=null;if(s.moved>10){drag=true;setTimeout(()=>drag=false,80)}let v=s.v*16;if(Math.abs(v)<1)return;
-  const run=()=>{s.sc.scrollTop+=v;v*=.94;if(Math.abs(v)>.4)s.raf=requestAnimationFrame(run)};s.raf=requestAnimationFrame(run)};
- document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
+ const begin=(target,x,id)=>{if(!isRot()||!target.closest||!target.closest('.ov')||target.closest('#ovScroll,.tScroll,select'))return false;
+  const sc=scOf(target)||(target.closest('#ov')?ovScroller():target.closest('#title')?$('#title .card'):null);if(!sc)return false;if(st&&st.raf)cancelAnimationFrame(st.raf);
+  st={sc,id,p:x,v:0,t:performance.now(),moved:0,raf:0};return true};
+ const move=(x)=>{const now=performance.now(),d=x-st.p,dt=Math.max(1,now-st.t);st.p=x;st.t=now;st.moved+=Math.abs(d);st.sc.scrollTop+=d;st.v=d/dt*.8+st.v*.2};
+ const finish=()=>{const s=st;st=null;if(!s)return;if(s.moved>10){drag=true;setTimeout(()=>drag=false,120)}if(performance.now()-s.t>90)return;let v=s.v*16;if(Math.abs(v)<1)return;
+  const run=()=>{s.sc.scrollTop+=v;v*=.95;if(Math.abs(v)>.35)s.raf=requestAnimationFrame(run)};s.raf=requestAnimationFrame(run)};
+ // cảm ứng (iPhone/Android): dùng touch event và chặn cuộn mặc định để không bị trình duyệt giành cử chỉ
+ document.addEventListener('touchstart',e=>{const t=e.changedTouches[0];begin(e.target,t.clientX,t.identifier)},{passive:true,capture:true});
+ document.addEventListener('touchmove',e=>{if(!st)return;let t=null;for(const x of e.changedTouches)if(x.identifier===st.id)t=x;if(!t)return;e.preventDefault();move(t.clientX)},{passive:false,capture:true});
+ document.addEventListener('touchend',e=>{if(!st)return;for(const x of e.changedTouches)if(x.identifier===st.id)finish()},{capture:true});
+ document.addEventListener('touchcancel',()=>{st=null},{capture:true});
  document.addEventListener('click',e=>{if(drag){e.stopPropagation();e.preventDefault()}},true)}
 
 // ---------- chọn thẻ bày tủ theo trang (không cần cuộn)
